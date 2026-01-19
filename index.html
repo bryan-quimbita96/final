@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mejía GIS | Visualizador Hidroecológico</title>
+    <link rel='stylesheet' href='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css' />
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- SIDEBAR IZQUIERDO - Control de Capas -->
+    <aside id="sidebar-left">
+        <header>
+            <h1>MEJÍA <span class="accent">GIS</span></h1>
+            <p>Panel de Control Multicapa</p>
+        </header>
+
+        <!-- Selector de Mapa Base -->
+        <section id="basemap-selector" class="control-section">
+            <h3>🗺️ MAPA BASE</h3>
+            <select id="basemap-dropdown" class="dropdown">
+                <option value="positron">Claro (Positron)</option>
+                <option value="dark">Oscuro (Dark Matter)</option>
+                <option value="osm">OpenStreetMap</option>
+                <option value="satellite">Satélite (Esri)</option>
+            </select>
+        </section>
+
+        <!-- Grupos de Capas -->
+        <section id="layer-manager">
+            
+            <!-- Referencia Territorial -->
+            <div class="layer-group">
+                <button class="group-toggle" onclick="window.toggleGroup(this)">
+                    <span class="arrow">▶</span> Referencia Territorial
+                </button>
+                <div class="group-content">
+                    <button class="btn" onclick="window.ctrlLayer('4326_parroquias_mejia', this)">Límites Parroquiales</button>
+                </div>
+            </div>
+
+            <!-- Dinámica e Impacto Humano -->
+            <div class="layer-group">
+                <button class="group-toggle" onclick="window.toggleGroup(this)">
+                    <span class="arrow">▶</span> Dinámica e Impacto Humano
+                </button>
+                <div class="group-content">
+                    <button class="btn" onclick="window.ctrlLayer('4326_zonas_prioritarias_conservacion_mejia', this)">Zonas de Conservación</button>
+                    <button class="btn" onclick="window.ctrlLayer('4326_uso_ocupacion_suelo_mejia', this)">Uso de Suelo</button>
+                    <button class="btn" onclick="window.ctrlLayer('4326_presion_antropica_mejia', this)">Presión Antrópica</button>
+                </div>
+            </div>
+
+            <!-- Condición Ecohidrológica -->
+            <div class="layer-group">
+                <button class="group-toggle" onclick="window.toggleGroup(this)">
+                    <span class="arrow">▶</span> Condición Ecohidrológica
+                </button>
+                <div class="group-content">
+                    <button class="btn" onclick="window.ctrlLayer('4326_riesgo_hidroecologico_mejia', this)">Riesgo Hidroecológico</button>
+                    <button class="btn" onclick="window.ctrlLayer('4326_funcionalidad_uso_suelos_mejia', this)">Funcionalidad de Uso</button>
+                    <button class="btn" onclick="window.ctrlLayer('4326_indice_funcionalidad_hidroecologico_mejia', this)">Índice IFH</button>
+                    <button class="btn" onclick="window.ctrlLayer('4326_condicion_biofisica_mejia', this)">Condición Biofísica</button>
+                    <button class="btn" onclick="window.ctrlLayer('4326_ndvi_mejia', this)">NDVI (Vegetación)</button>
+                    <button class="btn" onclick="window.ctrlLayer('4326_ndwi_mejia', this)">NDWI (Agua)</button>
+                </div>
+            </div>
+
+            <!-- Soporte Edáfico-Hidrológico -->
+            <div class="layer-group">
+                <button class="group-toggle" onclick="window.toggleGroup(this)">
+                    <span class="arrow">▶</span> Soporte Edáfico-Hidrológico
+                </button>
+                <div class="group-content">
+                    <button class="btn" onclick="window.ctrlLayer('4326_unidades_suelo_mejia', this)">Unidades de Suelo</button>
+                    <button class="btn" onclick="window.ctrlLayer('4326_retencion_hidirca_suelos_mejia', this)">Retención Hídrica</button>
+                    <button class="btn" onclick="window.ctrlLayer('4326_indice_topografico_humedad_mejia', this)">Índice ITH</button>
+                </div>
+            </div>
+
+            <!-- Condición Físico-Geomorfológica -->
+            <div class="layer-group">
+                <button class="group-toggle" onclick="window.toggleGroup(this)">
+                    <span class="arrow">▶</span> Condición Físico-Geomorfológica
+                </button>
+                <div class="group-content">
+                    <button class="btn" onclick="window.ctrlLayer('4326_alturas_mejia', this)">Altimetría</button>
+                    <button class="btn" onclick="window.ctrlLayer('4326_pendientes_mejia', this)">Pendientes</button>
+                </div>
+            </div>
+
+            <!-- Clima -->
+            <div class="layer-group">
+                <button class="group-toggle" onclick="window.toggleGroup(this)">
+                    <span class="arrow">▶</span> Clima
+                </button>
+                <div class="group-content">
+                    <button class="btn" onclick="window.ctrlLayer('4326_temperatura_mejia', this)">Temperatura</button>
+                    <button class="btn" onclick="window.ctrlLayer('4326_precipitacion_mejia', this)">Precipitación</button>
+                </div>
+            </div>
+
+        </section>
+    </aside>
+
+    <!-- MAPA CENTRAL -->
+    <div id="map"></div>
+
+    <!-- LEYENDA AUTOMÁTICA (inferior central) -->
+    <div id="legend-container">
+        <h4 id="legend-title">Sin capas activas</h4>
+        <div id="legend-content"></div>
+    </div>
+
+    <!-- PANEL DERECHO - Inspector de Atributos FLOTANTE -->
+    <aside id="sidebar-right">
+        <button id="close-inspector" onclick="hideInspector()">×</button>
+        <div class="inspector-header">
+            <div class="inspector-title-row">
+                <h4>Atributos de la Capa</h4>
+            </div>
+            <span id="layer-tag">INFO</span>
+        </div>
+        <div id="details">
+            <p style="color: #94a3b8; text-align: center; padding: 40px 20px;">
+                Haga clic en el mapa para visualizar los atributos de los elementos.
+            </p>
+        </div>
+    </aside>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Botón Flotante de Reportes -->
+    <button id="btn-reporte-flotante" onclick="crearReporteConGeolocalizacion()" title="Crear Reporte desde mi ubicación">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v20M2 12h20"/>
+        </svg>
+        <span>Reportar</span>
+    </button>
+
+    <script src='https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'></script>
+    <script src="main.js"></script>
+</body>
+
+</html>
